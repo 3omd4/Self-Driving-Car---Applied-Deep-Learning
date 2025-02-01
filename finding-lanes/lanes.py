@@ -8,6 +8,15 @@ def canny(image):
     canny= cv2.Canny(blur, 50, 150)
     return canny
 
+def region_of_interest(image):
+    height = image.shape[0]
+    polygons = np.array([
+    ([(200, height), (1100, height), (570, 250)])
+    ])
+    mask = np.zeros_like(image)#mask will have the number of pixels as image
+    cv2.fillPoly(mask, polygons, 255)  #fill our mask with our triangle
+    return mask
+
 image= cv2.imread('test_image.jpg')
 
 ##cv2.imshow('result', image)#this function should be followed by the waitkey()
@@ -29,5 +38,5 @@ lane_image= np.copy(image) #because arrays are immutable meaning if assigned any
  #black areas -> low changes in intensity
  #white lines -> high change in intesity exceeding te threshold
 canny= canny(lane_image)
-plt.imshow(canny)
+plt.imshow(region_of_interest(canny))
 plt.show()
