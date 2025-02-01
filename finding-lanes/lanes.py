@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt #to use imshow from it reducing number of arguments only to the image name
 
 def canny(image):
     gray= cv2.cvtColor(lane_image, cv2.COLOR_RGB2GRAY)
@@ -28,5 +29,5 @@ lane_image= np.copy(image) #because arrays are immutable meaning if assigned any
  #black areas -> low changes in intensity
  #white lines -> high change in intesity exceeding te threshold
 canny= canny(lane_image)
-cv2.imshow('blur', canny)
-cv2.waitKey(0)
+plt.imshow(canny)
+plt.show()
