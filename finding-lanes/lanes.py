@@ -11,13 +11,21 @@ def canny(image):
 def region_of_interest(image):
     height = image.shape[0]
     polygons = np.array([
-    ([(200, height), (1100, height), (570, 250)])
+    ([(200, height), (1100, height), (550, 250)])
     ])
     mask = np.zeros_like(image)#mask will have the number of pixels as image
     cv2.fillPoly(mask, polygons, 255)  #fill our mask with our triangle
     
     masked_image=cv2.bitwise_and(image, mask)
     return masked_image
+
+def display_lines(image, lines):
+    line_image=np.zeros_like(image)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4)
+            cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
+    return line_image
 
 image= cv2.imread('test_image.jpg')
 
@@ -41,5 +49,8 @@ lane_image= np.copy(image) #because arrays are immutable meaning if assigned any
  #white lines -> high change in intesity exceeding te threshold
 canny= canny(lane_image)
 cropped_image = region_of_interest(canny)
-plt.imshow(cropped_image)
+lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100,   np.array([]), minLineLength=40, maxLineGap=5)#Hough Transform 2
+line_image = display_lines(lane_image, lines)
+combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
+plt.imshow(combo_image)
 plt.show()
