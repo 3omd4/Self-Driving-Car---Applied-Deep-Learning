@@ -15,7 +15,9 @@ def region_of_interest(image):
     ])
     mask = np.zeros_like(image)#mask will have the number of pixels as image
     cv2.fillPoly(mask, polygons, 255)  #fill our mask with our triangle
-    return mask
+    
+    masked_image=cv2.bitwise_and(image, mask)
+    return masked_image
 
 image= cv2.imread('test_image.jpg')
 
@@ -38,5 +40,6 @@ lane_image= np.copy(image) #because arrays are immutable meaning if assigned any
  #black areas -> low changes in intensity
  #white lines -> high change in intesity exceeding te threshold
 canny= canny(lane_image)
-plt.imshow(region_of_interest(canny))
+cropped_image = region_of_interest(canny)
+plt.imshow(cropped_image)
 plt.show()
