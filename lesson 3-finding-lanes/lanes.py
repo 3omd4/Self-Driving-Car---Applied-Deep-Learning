@@ -7,7 +7,7 @@ def make_points(image, line):
     y2 = int(y1*3/5)         # slightly lower than the middle
     x1 = int((y1 - intercept)/slope)
     x2 = int((y2 - intercept)/slope)
-    return [[x1, y1, x2, y2]]
+    return np.array([x1, y1, x2, y2])
  
 def average_slope_intercept(image, lines):
     left_fit    = []
@@ -24,12 +24,13 @@ def average_slope_intercept(image, lines):
             else:
                 right_fit.append((slope, intercept))
     # add more weight to longer lines
-    left_fit_average  = np.average(left_fit, axis=0)
-    right_fit_average = np.average(right_fit, axis=0)
-    left_line  = make_points(image, left_fit_average)
-    right_line = make_points(image, right_fit_average)
-    averaged_lines = [left_line, right_line]
-    return averaged_lines
+    if len(left_fit) and len(right_fit):
+        left_fit_average  = np.average(left_fit, axis=0)
+        right_fit_average = np.average(right_fit, axis=0)
+        left_line  = make_points(image, left_fit_average)
+        right_line = make_points(image, right_fit_average)
+        averaged_lines = np.array([left_line, right_line])
+        return averaged_lines
  
 def canny(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -42,8 +43,8 @@ def display_lines(img,lines):
     line_image = np.zeros_like(img)
     if lines is not None:
         for line in lines:
-            for x1, y1, x2, y2 in line:
-                cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),10)
+            x1, y1, x2, y2 =line.reshape(4)
+            cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),10)
     return line_image
  
 def region_of_interest(canny):
