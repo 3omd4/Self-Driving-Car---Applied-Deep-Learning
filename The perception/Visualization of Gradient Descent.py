@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def draw (x1, x2):
     ln = plt.plot(x1, x2)
-    plt.pause(0.0001)
+    plt.pause(0.01)
     ln[0].remove()
 
 def sigmoid(score):
@@ -17,7 +17,7 @@ def calculate_error(line_parameters, points, y):
 
 def gradient_descent(line_parameters, points, y, alpha):
     m = points.shape[0]
-    for i in range(5000):
+    for i in range(500):
         prop=sigmoid(points*line_parameters)
         gradient= (points.T * (prop - y)) * (alpha / m) 
         line_parameters = line_parameters - gradient
