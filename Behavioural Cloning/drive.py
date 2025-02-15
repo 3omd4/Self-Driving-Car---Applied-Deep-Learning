@@ -1,52 +1,60 @@
 import socketio
 import eventlet
-import tensorflow.keras as keras
-import base64
 import numpy as np
+from flask import Flask
+from tensorflow.keras.models import load_model  # Import load_model directly
+import base64
+from io import BytesIO
+from PIL import Image
 import cv2
 
-from PIL import Image
-from io import BytesIO
-from flask import Flask
-from keras.models import load_model
-
+# Initialize Socket.IO server
 sio = socketio.Server()
 
-app = Flask(__name__)  # '__main__'
+# Initialize Flask app
+app = Flask(__name__)
 speed_limit = 10
 
+# Image preprocessing function
 def img_preprocess(img):
-    img = img[55:130, :, :]
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
-    img = cv2.GaussianBlur(img, (3, 3), 0)
-    img = cv2.resize(img, (200, 66))  # to match nvidia model input
-    img = img / 255
+    img = img[60:135, :, :]  # Crop the image
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)  # Convert to YUV
+    img = cv2.GaussianBlur(img, (3, 3), 0)  # Apply Gaussian blur
+    img = cv2.resize(img, (200, 66))  # Resize the image
+    img = img / 255  # Normalize the image
     return img
 
+# Socket.IO event for telemetry data
 @sio.on('telemetry')
 def telemetry(sid, data):
-    speed = float(data["speed"])
-    image = Image.open(BytesIO(base64.b64decode(data["image"])))
-    image = np.asarray(image)
-    image = img_preprocess(image)
-    image = np.array([image])
-    steering_angle = float(model.predict(image))
-    throttle = 1.0 - speed / speed_limit
-    send_control(steering_angle, 1.0)
-    print('{} {} {}'.format(steering_angle, throttle, speed))
+    speed = float(data['speed'])  # Get the current speed
+    image = Image.open(BytesIO(base64.b64decode(data['image'])))  # Decode the image
+    image = np.asarray(image)  # Convert to NumPy array
+    image = img_preprocess(image)  # Preprocess the image
+    image = np.array([image])  # Add batch dimension
+    steering_angle = float(model.predict(image))  # Predict steering angle
+    throttle = 1.0 - speed / speed_limit  # Calculate throttle
+    print(f'Steering Angle: {steering_angle}, Throttle: {throttle}, Speed: {speed}')
+    send_control(steering_angle, throttle)  # Send control commands
 
-@sio.on('connect')  # message, disconnect
+# Socket.IO event for connection
+@sio.on('connect')
 def connect(sid, environ):
-    print("connect")
-    send_control(0, 0)
+    print('Connected')
+    send_control(0, 0)  # Initialize with zero steering and throttle
 
+# Function to send control commands
 def send_control(steering_angle, throttle):
-    sio.emit("steer", data={
-        'steering_angle': steering_angle.__str__(),
-        'throttle': throttle.__str__()
+    sio.emit('steer', data={
+        'steering_angle': str(steering_angle),
+        'throttle': str(throttle)
     })
 
+# Load the model
+model = load_model('model.h5')  # Load the model directly
+
+# Start the server
 if __name__ == '__main__':
-    model = load_model('model.h5')
     app = socketio.Middleware(sio, app)
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
+
