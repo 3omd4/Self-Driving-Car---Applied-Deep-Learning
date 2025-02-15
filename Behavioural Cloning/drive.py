@@ -3,6 +3,7 @@ import eventlet
 import tensorflow.keras as keras
 import base64
 import numpy as np 
+import cv2
 
 from PIL import Image
 from io import BytesIO
@@ -11,7 +12,7 @@ from keras.models import load_model
 
 # import os
  
-# import cv2
+ 
 # import matplotlib.pyplot as plt
 # import matplotlib.image as mpimg
 # import pandas as pd
