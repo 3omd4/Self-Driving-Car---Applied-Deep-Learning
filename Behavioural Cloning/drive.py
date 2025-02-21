@@ -29,11 +29,11 @@ def img_preprocess(img):
 def telemetry(sid, data):
     """Handle telemetry data from the simulator."""
     if data is None:
-        print("❌ No telemetry data received!")
+        print("No telemetry data received!")
         return
 
     try:
-        print("✅ Telemetry Data Received")
+        print("Telemetry Data Received")
         print(data.keys())  # Print available telemetry data keys
 
         speed = float(data['speed'])  # Get current speed
@@ -45,26 +45,26 @@ def telemetry(sid, data):
         # Predict steering angle
         steering_angle = float(model.predict(image)[0][0])
 
-        print(f"🔄 Predicted Steering Angle: {steering_angle:.4f}")
+        print(f"Predicted Steering Angle: {steering_angle:.4f}")
 
         # Calculate throttle (ensures car keeps moving)
         throttle = max(0.2, 1.0 - (speed / speed_limit))  
-        print(f"🛞 Steering: {steering_angle:.4f}, 🚀 Throttle: {throttle:.2f}, ⚡ Speed: {speed}")
+        print(f"Steering: {steering_angle:.4f}, Throttle: {throttle:.2f}, Speed: {speed}")
 
         send_control(steering_angle, throttle)
 
     except Exception as e:
-        print(f"❌ Error in telemetry processing: {e}")
+        print(f"Error in telemetry processing: {e}")
 
 @sio.on('connect')
 def connect(sid, environ):
     """Handle new simulator connection."""
-    print('✅ Connected to simulator!')
-    send_control(0.0, 0.5)  # Force slight movement on connect
+    print('Connected to simulator!')
+    send_control(0.0, 0.5)  #Force slight movement on connect
 
 def send_control(steering_angle, throttle):
     """Send control commands to the simulator."""
-    print(f"📤 Sending Control - Steering: {steering_angle:.4f}, Throttle: {throttle:.2f}")
+    print(f"Sending Control - Steering: {steering_angle:.4f}, Throttle: {throttle:.2f}")
     sio.emit('steer', data={
         'steering_angle': str(steering_angle),
         'throttle': str(throttle)
@@ -76,11 +76,11 @@ def mse(y_true, y_pred):
 
 if __name__ == '__main__':
     try:
-        model = load_model('model.h5', custom_objects={'mse': mse})
-        print("✅ Model loaded successfully!")
+        model = load_model('model.h5', custom_objects = {'mse': mse})
+        print("Model loaded successfully!")
         model.summary()  # Print model architecture for verification
     except Exception as e:
-        print(f"❌ Error loading model: {e}")
+        print(f"Error loading model: {e}")
         exit(1)
 
     # Start server
