@@ -1,9 +1,10 @@
 import socketio
 import eventlet
-import tensorflow.keras as keras
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.models import load_model 
 import numpy as np
 from flask import Flask
-from tensorflow.keras.models import load_model
 import base64
 from io import BytesIO
 from PIL import Image
@@ -14,7 +15,7 @@ sio = socketio.Server()
 app = Flask(__name__)
 
 # Speed limit (adjust as needed)
-speed_limit = 10
+speed_limit = 5
 
 def img_preprocess(img):
     """Preprocess the image for the model."""
@@ -33,7 +34,7 @@ def telemetry(sid, data):
         return
 
     try:
-        print("Telemetry Data Received")
+        #print("Telemetry Data Received")
         print(data.keys())  # Print available telemetry data keys
 
         speed = float(data['speed'])  # Get current speed
@@ -45,7 +46,7 @@ def telemetry(sid, data):
         # Predict steering angle
         steering_angle = float(model.predict(image)[0][0])
 
-        print(f"Predicted Steering Angle: {steering_angle:.4f}")
+        #print(f"Predicted Steering Angle: {steering_angle:.4f}")
 
         # Calculate throttle (ensures car keeps moving)
         throttle = max(0.2, 1.0 - (speed / speed_limit))  
@@ -60,11 +61,11 @@ def telemetry(sid, data):
 def connect(sid, environ):
     """Handle new simulator connection."""
     print('Connected to simulator!')
-    send_control(0.0, 0.5)  #Force slight movement on connect
+    send_control(0.0, 0.1)  #Force slight movement on connect
 
 def send_control(steering_angle, throttle):
     """Send control commands to the simulator."""
-    print(f"Sending Control - Steering: {steering_angle:.4f}, Throttle: {throttle:.2f}")
+    #print(f"Sending Control - Steering: {steering_angle:.4f}, Throttle: {throttle:.2f}")
     sio.emit('steer', data={
         'steering_angle': str(steering_angle),
         'throttle': str(throttle)
@@ -72,7 +73,7 @@ def send_control(steering_angle, throttle):
 
 def mse(y_true, y_pred):
     """Custom Mean Squared Error loss function."""
-    return keras.losses.mean_squared_error(y_true, y_pred)
+    return tensorflow.keras.losses.mean_squared_error(y_true, y_pred)
 
 if __name__ == '__main__':
     try:
